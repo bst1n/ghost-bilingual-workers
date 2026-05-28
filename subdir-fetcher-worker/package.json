@@ -1,0 +1,18 @@
+{
+  "name": "ghost-subdir-fetcher",
+  "version": "1.0.0",
+  "description": "Fetcher Worker (workers.dev): fetches Ghost origin and rewrites en.your-blog.com → your-blog.com/en in body + headers.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20260525.1",
+    "typescript": "^6.0.3",
+    "wrangler": "^4.94.0"
+  }
+}

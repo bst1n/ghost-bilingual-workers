@@ -1,0 +1,22 @@
+{
+  // Subdirectory proxy Worker.
+  // Attached to route `your-blog.com/en/*`. Strips the /en prefix and
+  // forwards the request to the subdir-fetcher-worker (over HTTPS on
+  // workers.dev) to escape Cloudflare's same-zone Worker→Worker restriction.
+  //
+  // Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ghost-subdir-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-05-01",
+  "observability": { "enabled": true },
+  "vars": {
+    // workers.dev URL of the subdir-fetcher-worker (see ../subdir-fetcher-worker/).
+    "FETCHER_URL": "https://ghost-subdir-fetcher.your-account.workers.dev"
+  },
+  "routes": [
+    { "pattern": "your-blog.com/en/*", "zone_name": "your-blog.com" }
+  ]
+  // Secrets (set via `wrangler secret put`):
+  //   FETCHER_SHARED_SECRET  — shared with subdir-fetcher-worker
+}

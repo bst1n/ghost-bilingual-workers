@@ -1,0 +1,30 @@
+{
+  // Subdirectory fetcher Worker.
+  // Lives on workers.dev (outside your zone) so its fetch to the Ghost origin
+  // (en.your-blog.com) is a cross-zone subrequest and escapes the same-zone
+  // Worker→Worker restriction (Cloudflare error 1042).
+  //
+  // Receives requests from subdir-proxy-worker, fetches the Ghost origin,
+  // rewrites all en.your-blog.com references → your-blog.com/en in the body
+  // and response headers (Location, Set-Cookie).
+  //
+  // Docs: https://developers.cloudflare.com/workers/wrangler/configuration/
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ghost-subdir-fetcher",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-05-01",
+  "observability": { "enabled": true },
+  // Must be accessible on workers.dev — the subdir-proxy-worker calls it
+  // over HTTPS to escape the same-zone restriction.
+  "workers_dev": true,
+  "preview_urls": false,
+  "vars": {
+    // Ghost EN origin URL (the actual Ghost site URL, before the subdir move).
+    "ORIGIN_URL": "https://en.your-blog.com",
+    // Public subdirectory URL readers will see.
+    "PUBLIC_URL": "https://your-blog.com/en"
+  }
+  // Secrets (set via `wrangler secret put`):
+  //   FETCHER_SHARED_SECRET   — shared with subdir-proxy-worker
+  //   INTERNAL_BYPASS_SECRET  — shared with i18n-worker (bypasses 301 redirect)
+}

@@ -1,0 +1,35 @@
+{
+  // Service-Binding-only proxy Worker.
+  //
+  // The main `ghost-subdir-i18n` Worker is on routes
+  // `your-blog.com/*` and `en.your-blog.com/*`. When it tries to fetch
+  // the Ghost Content API on the OTHER blog (e.g. en.your-blog.com/ghost/...)
+  // Cloudflare blocks the same-zone Worker→Worker subrequest and returns
+  // HTTP 500 (the "1042" condition).
+  //
+  // This proxy Worker is NOT bound to any route on the your-blog.com zone,
+  // so when IT calls fetch(), Cloudflare doesn't treat it as a same-zone
+  // Worker→Worker call. The main Worker reaches this proxy via a Service
+  // Binding (no public HTTP), so we're not exposing an open relay.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ghost-subdir-i18n-api-proxy",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-05-01",
+  "observability": { "enabled": true },
+  // Must be true: the main Worker calls this proxy over HTTPS (cross-zone),
+  // not via a Service Binding. Service Bindings propagate the source Worker's
+  // zone context, which re-triggers the same-zone fetch restriction we're
+  // trying to escape. A real cross-zone fetch (over workers.dev) is the only
+  // reliable workaround for two Ghost blogs sharing a Cloudflare zone.
+  // Authentication is enforced via the PROXY_SHARED_SECRET secret.
+  "workers_dev": true,
+  // Disable per-version preview URLs — only the stable production URL is needed.
+  "preview_urls": false,
+  "vars": {
+    "FR_SITE_URL": "https://your-blog.com",
+    "EN_SITE_URL": "https://en.your-blog.com"
+  }
+  // Secrets (set via `wrangler secret put --name ghost-subdir-i18n-api-proxy`):
+  //   FR_CONTENT_API_KEY
+  //   EN_CONTENT_API_KEY
+}
